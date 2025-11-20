@@ -2,7 +2,7 @@ import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
-
+import pickle
 
 max_length = 54
 padding_type = 'post'
@@ -117,7 +117,11 @@ with col2:
     example1 = st.button("Real News Example")
     example2 = st.button("Fake News Example")
 
-# Load model and tokenizer (in a real app, this would be cached)
+
+def load_tokenizer(tokenizer_path='models/tokenizer.pkl'):
+    with open(tokenizer_path, 'rb') as handle:
+        tokenizer = pickle.load(handle)
+    return tokenizer
 
 
 @st.cache_resource
@@ -128,7 +132,7 @@ def load_model_components():
     """
     # Placeholder - replace with your actual model loading code
     try:
-        tokenizer = Tokenizer()
+        tokenizer = load_tokenizer()
         model = load_model('models/model.keras')
         st.success("✅ Model components loaded successfully!")
         return model, tokenizer
@@ -163,19 +167,11 @@ if analyze_button and news_text:
 
         prediction = model.predict(sequences, verbose=0)
 
-        fake_score = prediction[0][0]
-        real_score = 1 - fake_score
+        real_score = prediction[0][0]
+        fake_score = 1 - real_score
 
         # Display results
-        if prediction[0][0] > 0.5:
-            results_placeholder.markdown(
-                '<div class="result-fake">'
-                '<h4>🚨 Likely FAKE News</h3>'
-                '<p>This content shows characteristics of misinformation.</p>'
-                '</div>',
-                unsafe_allow_html=True
-            )
-        else:
+        if prediction[0][0] >= 0.5:
             results_placeholder.markdown(
                 '<div class="result-real">'
                 '<h4>✅ Likely REAL News</h3>'
@@ -183,11 +179,19 @@ if analyze_button and news_text:
                 '</div>',
                 unsafe_allow_html=True
             )
+        else:
+            results_placeholder.markdown(
+                '<div class="result-fake">'
+                '<h4>🚨 Likely FAKE News</h3>'
+                '<p>This content shows characteristics of misinformation.</p>'
+                '</div>',
+                unsafe_allow_html=True
+            )
 
         # Confidence meter
         confidence_placeholder.subheader("Confidence Level")
-        confidence_value = fake_score if (prediction[0][0] > 0.5) else real_score
-        print(confidence_value)
+        confidence_value = real_score if (prediction[0][0] > 0.5) else fake_score
+
         confidence_placeholder.markdown(
             f'<div class="confidence-bar">'
             f'<div class="confidence-fill" style="width: {confidence_value * 100:.1}%"></div>'
@@ -236,8 +240,8 @@ if clear_button:
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: gray;'>"
-    "Fake News Detection System • Built with TensorFlow & Streamlit • "
-    "<strong>Note:</strong> This is a demonstration interface. For production use, ensure proper model integration."
+    "Fake News Detection System • Built with TensorFlow & Streamlit • <br>"
+    "<strong>Note:</strong> This is a demonstration interface, therefore not suitable for production use."
     "</div>",
     unsafe_allow_html=True
 )
