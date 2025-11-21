@@ -5,6 +5,28 @@ Fake news is a type of misinformation that can mislead readers, influence public
 In this article we'll build a deep learning model using TensorFlow in Python to detect fake news from text.
 
 ---
+### Project structure
+```text
+FakeNewsDetector
+├── app.py
+├── architecture_comparison.png
+├── arch.py
+├── checkpoints
+│   └── model-best.h5
+├── datasets
+├── models
+│   ├── model.keras
+│   └── tokenizer.pkl
+├── predict.py
+├── preprocess.py
+├── README.md
+├── requirements.txt
+├── src
+│   ├── interface.png
+│   └── Screenshot_20251120_103930.png
+├── train.py
+└── visualization.py
+```
 
 ### Implementation of Fake News Detection Model
 
